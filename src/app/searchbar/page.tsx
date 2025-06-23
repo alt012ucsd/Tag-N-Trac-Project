@@ -1,63 +1,41 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
-// Register ChartJS components
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-// Define types for your data
-type ChartDataResponse = {
-  labels: string[];
-  values: number[];
-  // Add other properties you expect from the API
-};
-
-type PieChartData = {
-  labels: string[];
-  datasets: {
-    data: number[];
-    backgroundColor: string[];
-  }[];
-};
+import { useState, useEffect, useCallback } from "react";
+import Navbar from "../../components/navbar";
 
 export default function Dashboard() {
-  const [project, setProject] = useState('');
-  const [assetId, setAssetId] = useState('');
-  const [chartData, setChartData] = useState<ChartDataResponse | null>(null);
+  const [project, setProject] = useState("");
+  const [assetId, setAssetId] = useState("");
+  const [tableData, setTableData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-  if (!project && !assetId) return;
+    try {
+      setLoading(true);
+      setError(null);
 
-  try {
-    setLoading(true);
-    setError(null);
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ project, asset_id: assetId }),
+      });
 
-    const res = await fetch('/api/data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ project, asset_id: assetId }),
-    });
+      const data = await res.json();
 
-    if (!res.ok) throw new Error('Failed to fetch data');
+      if (!res.ok) throw new Error(data.error || "Failed to fetch data");
 
-    const data: ChartDataResponse = await res.json();
-    setChartData(data);
-  } catch (err) {
-    setError(err instanceof Error ? err.message : 'Unknown error');
-    console.error('Fetch error:', err);
-  } finally {
-    setLoading(false);
-  }
-}, [project, assetId]);
+      setTableData(data.results || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+      console.error("Fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [project, assetId]);
 
-
-  // Debounce effect
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchData();
@@ -66,47 +44,79 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [project, assetId, fetchData]);
 
-  // Convert API data to chart format
-  const pieChartData: PieChartData | null = chartData ? {
-    labels: chartData.labels,
-    datasets: [
-      {
-        data: chartData.values,
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          // Add more colors as needed
-        ],
-      },
-    ],
-  } : null;
-
   return (
-    <div className="dashboard-container">
-      <div className="search-filters">
-        <input
-          placeholder="Project Name"
-          value={project}
-          onChange={(e) => setProject(e.target.value)}
-          className="search-input"
-        />
-        <input
-          placeholder="Asset ID"
-          value={assetId}
-          onChange={(e) => setAssetId(e.target.value)}
-          className="search-input"
-        />
-      </div>
+    <>
+      <Navbar />
+      <div className="dashboard-container" style={{ padding: "2rem" }}>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem" }}>
+          Device Dashboard
+        </h1>
 
-      {loading && <p>Loading data...</p>}
-      {error && <p className="error">Error: {error}</p>}
-
-      {pieChartData && (
-        <div className="chart-container">
-          <Pie data={pieChartData} />
+        <div className="search-filters" style={{ marginBottom: "1rem" }}>
+          <input
+            placeholder="Project Name"
+            value={project}
+            onChange={(e) => setProject(e.target.value)}
+            className="search-input"
+            style={{ marginRight: "1rem", padding: "0.5rem" }}
+          />
+          <input
+            placeholder="Asset ID"
+            value={assetId}
+            onChange={(e) => setAssetId(e.target.value)}
+            className="search-input"
+            style={{ padding: "0.5rem" }}
+          />
         </div>
-      )}
-    </div>
+
+        {loading && <p>Loading data...</p>}
+        {error && <p style={{ color: "red" }}>Error: {error}</p>}
+
+        {tableData.length > 0 && (
+          <div className="table-container" style={{ overflowX: "auto" }}>
+            <table style={{ borderCollapse: "collapse", width: "100%" }}>
+              <thead>
+                <tr>
+                  {Object.keys(tableData[0]).map((key) => (
+                    <th
+                      key={key}
+                      style={{
+                        border: "1px solid #ccc",
+                        padding: "8px",
+                        background: "#f8f8f8",
+                        textAlign: "left",
+                      }}
+                    >
+                      {key}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.map((row, i) => (
+                  <tr key={i}>
+                    {Object.values(row).map((value, j) => (
+                      <td
+                        key={j}
+                        style={{
+                          border: "1px solid #ccc",
+                          padding: "8px",
+                        }}
+                      >
+                        {value?.toString()}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && !error && tableData.length === 0 && (
+          <p>No matching results found.</p>
+        )}
+      </div>
+    </>
   );
 }

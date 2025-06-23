@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Navbar from "../../components/navbar"; // Adjust relative path as needed
+
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { createClient } from "@supabase/supabase-js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Use your existing environment variables for security
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -106,23 +107,26 @@ export default function PieChartsPage() {
   };
 
   return (
-    <div className="font-sans bg-gray-50 min-h-screen p-10 text-gray-800">
-      <h1 className="text-center mb-10 font-bold text-2xl">
-        Analytics Pie Charts
-      </h1>
-      <div className="flex flex-wrap gap-10 justify-center">
-        {[
-          { field: "device_type", title: "Device Type" },
-          { field: "asset_type", title: "Asset Type" },
-          { field: "organization", title: "Organization" },
-          { field: "event_type", title: "Event Type (Initiate/Success)" },
-        ].map(({ field, title }) => (
-          <div key={field} className="bg-white p-5 rounded-xl shadow-md w-80">
-            <h3 className="text-center mb-5 font-semibold text-lg">{title}</h3>
-            <Pie data={pieDataForField(field as keyof DeviceConfig)} />
-          </div>
-        ))}
+    <>
+      <Navbar />
+      <div className="font-sans bg-gray-50 min-h-screen p-10 text-gray-800">
+        <h1 className="text-center mb-10 font-bold text-2xl">
+          Analytics Pie Charts
+        </h1>
+        <div className="flex flex-wrap gap-10 justify-center">
+          {[
+            { field: "device_type", title: "Device Type" },
+            { field: "asset_type", title: "Asset Type" },
+            { field: "organization", title: "Organization" },
+            { field: "event_type", title: "Event Type (Initiate/Success)" },
+          ].map(({ field, title }) => (
+            <div key={field} className="bg-white p-5 rounded-xl shadow-md w-80">
+              <h3 className="text-center mb-5 font-semibold text-lg">{title}</h3>
+              <Pie data={pieDataForField(field as keyof DeviceConfig)} />
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
