@@ -102,7 +102,7 @@ export default function Analytics() {
         color: '#333',
       }}
     >
-      <h1 style={{ textAlign: 'center', marginBottom: 40, fontWeight: '700' }}>Analytics Pie Charts</h1>
+      <h1 style={{ textAlign: 'center', marginBottom: 40, fontWeight: '700' }}>Pie Chart Analytics</h1>
 
       <div
         style={{

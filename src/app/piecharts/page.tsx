@@ -111,7 +111,7 @@ export default function PieChartsPage() {
       <Navbar />
       <div className="font-sans bg-gray-50 min-h-screen p-10 text-gray-800">
         <h1 className="text-center mb-10 font-bold text-2xl">
-          Analytics Pie Charts
+          Pie Chart Analytics
         </h1>
         <div className="flex flex-wrap gap-10 justify-center">
           {[

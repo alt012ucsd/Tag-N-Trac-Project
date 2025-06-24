@@ -8,7 +8,7 @@ export default function Navbar() {
 
   const links = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/piecharts", label: "Pie Chart" },
+    { href: "/piecharts", label: "Pie Charts" },
     { href: "/searchbar", label: "Search" },
   ];
 
